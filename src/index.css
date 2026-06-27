@@ -1,0 +1,273 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg: #0a0a0a;
+  --color-bg-soft: #141414;
+  --color-panel: #1c1c1c;
+  --color-panel-2: #2a2a2a;
+  --color-border: #3a3a3a;
+  --color-border-hi: #5a5a5a;
+  --color-fg: #f0f0f0;
+  --color-fg-dim: #b0b0b0;
+  --color-fg-mute: #707070;
+  --color-term: #d0d0d0;
+
+  --font-pixel: "Press Start 2P", monospace;
+  --font-mono: "VT323", "Courier New", monospace;
+  --font-bitmap: "Silkscreen", monospace;
+  --font-sans: "Pixelify Sans", "Inter", sans-serif;
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  height: auto;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: auto;
+  -webkit-font-smoothing: none;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeSpeed;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+}
+
+body {
+  font-family: var(--font-sans);
+  background: #0a0a0a;
+  color: var(--color-fg);
+  min-height: 100vh;
+  overflow-x: hidden;
+  font-smooth: never;
+}
+
+#root {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+}
+
+::-webkit-scrollbar {
+  width: 16px;
+  height: 16px;
+}
+::-webkit-scrollbar-track {
+  background: #1c1c1c;
+  background-image:
+    repeating-linear-gradient(0deg, transparent 0, transparent 2px, rgba(255,255,255,0.05) 2px, rgba(255,255,255,0.05) 4px);
+}
+::-webkit-scrollbar-thumb {
+  background: #5a5a5a;
+  border: 2px solid #0a0a0a;
+  background-image:
+    repeating-linear-gradient(45deg, transparent 0, transparent 4px, rgba(255,255,255,0.1) 4px, rgba(255,255,255,0.1) 8px);
+}
+::-webkit-scrollbar-button {
+  background: #2a2a2a;
+  border: 1px solid #5a5a5a;
+  height: 16px;
+  width: 16px;
+}
+
+::selection {
+  background: #f0f0f0;
+  color: #0a0a0a;
+}
+
+*:focus-visible {
+  outline: 1px dotted #f0f0f0;
+  outline-offset: -4px;
+}
+
+.pixelated {
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+}
+
+.font-pixel {
+  font-family: var(--font-pixel);
+  letter-spacing: 0.05em;
+}
+
+.font-mono-y2k {
+  font-family: var(--font-mono);
+  font-size: 1.05em;
+  line-height: 1.1;
+}
+
+.font-bitmap {
+  font-family: var(--font-bitmap);
+  letter-spacing: 0.02em;
+}
+
+.bevel-out {
+  border-style: solid;
+  border-width: 2px;
+  border-color: #5a5a5a #0a0a0a #0a0a0a #5a5a5a;
+  box-shadow:
+    inset 1px 1px 0 0 #b0b0b0,
+    inset -1px -1px 0 0 #1c1c1c,
+    inset 2px 2px 0 0 #f0f0f0,
+    inset -2px -2px 0 0 #000000;
+  background: #c0c0c0;
+}
+
+.bevel-in {
+  border-style: solid;
+  border-width: 2px;
+  border-color: #1c1c1c #b0b0b0 #b0b0b0 #1c1c1c;
+  box-shadow:
+    inset 1px 1px 0 0 #0a0a0a,
+    inset -1px -1px 0 0 #5a5a5a,
+    inset 2px 2px 0 0 #1c1c1c,
+    inset -2px -2px 0 0 #f0f0f0;
+}
+
+.bevel-out-dark {
+  border-style: solid;
+  border-width: 2px;
+  border-color: #5a5a5a #0a0a0a #0a0a0a #5a5a5a;
+  box-shadow:
+    inset 1px 1px 0 0 #707070,
+    inset -1px -1px 0 0 #0a0a0a;
+}
+
+.win95-title {
+  background: linear-gradient(90deg, #2a2a2a 0%, #5a5a5a 50%, #2a2a2a 100%);
+  background-size: 200% 100%;
+  animation: title-shine 8s linear infinite;
+  color: #f0f0f0;
+  font-family: var(--font-bitmap);
+  font-weight: 700;
+}
+
+@keyframes title-shine {
+  0% { background-position: 0% 0%; }
+  100% { background-position: 200% 0%; }
+}
+
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+.cursor-blink {
+  animation: blink 1s steps(2) infinite;
+}
+
+@keyframes scanline {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
+}
+
+@keyframes glitch-x {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-2px); }
+  40% { transform: translateX(2px); }
+  60% { transform: translateX(-1px); }
+  80% { transform: translateX(1px); }
+}
+
+@keyframes flicker {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.95; }
+  75% { opacity: 0.92; }
+}
+
+@keyframes text-scramble {
+  0% { content: "01010110"; }
+  20% { content: "11001010"; }
+  40% { content: "00110101"; }
+  60% { content: "10110010"; }
+  80% { content: "01001110"; }
+  100% { content: "opsec_6209"; }
+}
+
+@keyframes marquee {
+  0% { transform: translateX(100%); }
+  100% { transform: translateX(-100%); }
+}
+
+@keyframes pixel-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+.crt-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 100;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      rgba(0, 0, 0, 0.15) 0px,
+      rgba(0, 0, 0, 0.15) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+  mix-blend-mode: multiply;
+}
+
+.crt-overlay::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 60%,
+    rgba(0, 0, 0, 0.4) 100%
+  );
+  pointer-events: none;
+}
+
+.pixel-noise {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' /%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23n)' /%3E%3C/svg%3E");
+}
+
+.grid-bg {
+  background-image:
+    linear-gradient(rgba(240, 240, 240, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(240, 240, 240, 0.03) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 4px;
+  background: #0a0a0a;
+  border: 1px solid #5a5a5a;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 12px;
+  height: 16px;
+  background: #c0c0c0;
+  border-style: solid;
+  border-width: 2px;
+  border-color: #f0f0f0 #5a5a5a #5a5a5a #f0f0f0;
+  margin-top: -7px;
+}

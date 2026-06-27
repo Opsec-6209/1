@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState, useRef, useCallback } from "react";
 import type { ReactNode } from "react";
 import { motion } from "framer-motion";
 import { Minus, Square, X } from "lucide-react";
@@ -23,7 +23,7 @@ export function Window({
   children,
   defaultX = 40,
   defaultY = 40,
-  width = "w-[min(92vw,720px)]",
+  width = "w-[min(94vw,720px)]",
   height = "h-auto",
   className = "",
   onClose,
@@ -38,44 +38,55 @@ export function Window({
         if (stored) return JSON.parse(stored);
       } catch {}
     }
-    return { x: defaultX, y: defaultY };
+    const isMobile = typeof window !== "undefined" && window.innerWidth < 640;
+    return { x: isMobile ? 4 : defaultX, y: isMobile ? 50 : defaultY };
   });
   const [zIndex, setZIndex] = useState(initialFocused ? 50 : 10);
   const [maximized, setMaximized] = useState(false);
   const [minimized, setMinimized] = useState(false);
-  const [dragging, setDragging] = useState<{ ox: number; oy: number } | null>(null);
+  const dragRef = useRef<{ ox: number; oy: number; pid: number } | null>(null);
 
-  const handleMouseDown = (e: React.MouseEvent) => {
-    if (maximized) return;
-    setZIndex((z) => z + 1);
-    setDragging({
-      ox: e.clientX - pos.x,
-      oy: e.clientY - pos.y,
-    });
-  };
+  const handlePointerDown = useCallback(
+    (e: React.PointerEvent) => {
+      if (maximized) return;
+      setZIndex((z) => z + 1);
+      dragRef.current = {
+        ox: e.clientX - pos.x,
+        oy: e.clientY - pos.y,
+        pid: e.pointerId,
+      };
+      (e.target as HTMLElement).setPointerCapture(e.pointerId);
+      e.preventDefault();
+    },
+    [maximized, pos]
+  );
 
-  const handleMouseMove = (e: MouseEvent) => {
-    if (!dragging) return;
-    const newX = Math.max(0, e.clientX - dragging.ox);
-    const newY = Math.max(0, e.clientY - dragging.oy);
-    setPos({ x: newX, y: newY });
-  };
+  const handlePointerMove = useCallback(
+    (e: React.PointerEvent) => {
+      if (!dragRef.current || e.pointerId !== dragRef.current.pid || maximized) return;
+      setPos({
+        x: Math.max(-100, e.clientX - dragRef.current.ox),
+        y: Math.max(0, e.clientY - dragRef.current.oy),
+      });
+    },
+    [maximized]
+  );
 
-  const handleMouseUp = () => {
-    if (dragging && posKey) {
+  const handlePointerUp = useCallback(
+    (e: React.PointerEvent) => {
+      if (!dragRef.current) return;
       try {
-        localStorage.setItem(posKey, JSON.stringify(pos));
+        (e.target as HTMLElement).releasePointerCapture(e.pointerId);
       } catch {}
-    }
-    setDragging(null);
-  };
-
-  if (typeof window !== "undefined") {
-    if (dragging) {
-      window.addEventListener("mousemove", handleMouseMove);
-      window.addEventListener("mouseup", handleMouseUp, { once: true });
-    }
-  }
+      if (posKey) {
+        try {
+          localStorage.setItem(posKey, JSON.stringify(pos));
+        } catch {}
+      }
+      dragRef.current = null;
+    },
+    [pos, posKey]
+  );
 
   if (minimized) return null;
 
@@ -85,7 +96,7 @@ export function Window({
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.95 }}
       transition={{ duration: 0.15, ease: "easeOut" }}
-      onMouseDown={() => setZIndex((z) => z + 1)}
+      onPointerDown={() => setZIndex((z) => z + 1)}
       style={{
         left: maximized ? 0 : pos.x,
         top: maximized ? 0 : pos.y,
@@ -94,54 +105,28 @@ export function Window({
         zIndex,
         position: "absolute",
       }}
-      className={`${maximized ? "" : width} ${maximized ? "" : height} bevel-out-dark bg-[#c0c0c0] select-none ${className}`}
+      className={`${maximized ? "" : width} ${maximized ? "" : height} bevel-out-dark bg-[#c0c0c0] select-none max-w-[100vw] ${className}`}
     >
       <div
-        onMouseDown={handleMouseDown}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerUp}
         onDoubleClick={() => setMaximized((m) => !m)}
-        className="win95-title px-2 py-1 flex items-center justify-between cursor-move text-[11px]"
+        className="win95-title px-2 py-1 flex items-center justify-between touch-none text-[10px] sm:text-[11px]"
+        style={{ touchAction: "none" }}
       >
         <div className="flex items-center gap-2 truncate">
-          {icon && <span className="w-3 h-3 flex items-center justify-center">{icon}</span>}
+          {icon && <span className="w-3 h-3 flex items-center justify-center flex-shrink-0">{icon}</span>}
           <span className="truncate">{title}</span>
         </div>
-        <div className="flex items-center gap-0.5">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setMinimized(true);
-            }}
-            onMouseDown={(e) => e.stopPropagation()}
-            className="w-5 h-5 bevel-out-dark flex items-center justify-center hover:bg-[#3a3a3a]"
-            aria-label="Minimize"
-          >
-            <Minus size={10} />
-          </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setMaximized((m) => !m);
-            }}
-            onMouseDown={(e) => e.stopPropagation()}
-            className="w-5 h-5 bevel-out-dark flex items-center justify-center hover:bg-[#3a3a3a]"
-            aria-label="Maximize"
-          >
-            <Square size={9} />
-          </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onClose?.();
-            }}
-            onMouseDown={(e) => e.stopPropagation()}
-            className="w-5 h-5 bevel-out-dark flex items-center justify-center hover:bg-[#aa0000] hover:text-white"
-            aria-label="Close"
-          >
-            <X size={10} />
-          </button>
+        <div className="flex items-center gap-0.5 flex-shrink-0 ml-1">
+          <button onClick={(e) => { e.stopPropagation(); setMinimized(true); }} onPointerDown={(e) => e.stopPropagation()} className="w-6 h-5 sm:w-5 sm:h-5 bevel-out-dark flex items-center justify-center hover:bg-[#3a3a3a]" aria-label="Minimize"><Minus size={10} /></button>
+          <button onClick={(e) => { e.stopPropagation(); setMaximized((m) => !m); }} onPointerDown={(e) => e.stopPropagation()} className="w-6 h-5 sm:w-5 sm:h-5 bevel-out-dark flex items-center justify-center hover:bg-[#3a3a3a]" aria-label="Maximize"><Square size={9} /></button>
+          <button onClick={(e) => { e.stopPropagation(); onClose?.(); }} onPointerDown={(e) => e.stopPropagation()} className="w-6 h-5 sm:w-5 sm:h-5 bevel-out-dark flex items-center justify-center hover:bg-[#aa0000] hover:text-white" aria-label="Close"><X size={10} /></button>
         </div>
       </div>
-      <div className="p-3 bg-[#c0c0c0] text-black max-h-[calc(100vh-100px)] overflow-auto">
+      <div className="p-2 sm:p-3 bg-[#c0c0c0] text-black max-h-[calc(100vh-140px)] overflow-auto text-[11px] sm:text-[12px]">
         {children}
       </div>
     </motion.div>

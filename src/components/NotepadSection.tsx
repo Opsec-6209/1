@@ -20,7 +20,7 @@ const FULL_TEXT = `opsec_6209.txt - Notepad
   Music       : 26 tracks loaded
                 Player: Winamp 2.91
   
-  Favorite OS : Windows 98 SE
+  Favorite OS : Arch Linux
   Favorite IDE: VS Code
   DPI         : 1000
   Keyboard    : WASD Movement
